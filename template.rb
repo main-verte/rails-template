@@ -70,7 +70,8 @@ group :test do
 end
 RUBY
 
-@bootstrap = yes?('Do you want to use Boostrap 4 as a CSS framework?')
+#@bootstrap = yes?('Do you want to use Boostrap 4 as a CSS framework?')
+@bootstrap = true
 
 # Ruby version
 ########################################
@@ -87,6 +88,7 @@ YAML
 run 'rm -rf app/assets/stylesheets'
 run 'rm -rf vendor'
 run 'mkdir app/assets/stylesheets'
+
 run 'curl -L https://github.com/main-verte/rails-template/archive/master.zip > stylesheets.zip'
 run 'unzip stylesheets.zip -d app/assets && rm stylesheets.zip && mv app/assets/rails-template-master/assets/* app/assets/stylesheets'
 run 'rm -r app/assets/rails-template-master'
@@ -145,7 +147,7 @@ file 'app/views/shared/_flashes.html.erb', <<-HTML
 <% end %>
 HTML
 
-run 'https://raw.githubusercontent.com/main-verte/rails-template/master/views/shared/_navbar.html.erb > app/views/shared/_navbar.html.erb'
+run 'curl -L https://raw.githubusercontent.com/main-verte/rails-template/master/views/shared/_navbar.html.erb > app/views/shared/_navbar.html.erb'
 
 # README
 ########################################
@@ -173,7 +175,11 @@ after_bundle do
   # Generators: db + simple form + pages controller
   ########################################
   rails_command 'db:drop db:create db:migrate'
-  generate('simple_form:install', '--bootstrap')
+  if @bootstrap
+    generate('simple_form:install', '--bootstrap')
+  else
+    generate('simple_form:install')
+  end
   generate(:controller, 'pages', 'home', '--skip-routes', '--no-test-framework')
 
   # Routes
@@ -243,10 +249,10 @@ RUBY
   ########################################
   inject_into_file 'config/webpack/environment.js', before: 'module.exports' do
   <<-JS
-  const webpack = require('webpack')
+const webpack = require('webpack')
 
-  // Preventing Babel from transpiling NodeModules packages
-  environment.loaders.delete('nodeModules');
+// Preventing Babel from transpiling NodeModules packages
+environment.loaders.delete('nodeModules');
   JS
   end
 
@@ -286,13 +292,13 @@ RUBY
   inject_into_file 'test/test_helper.rb', after: /^end/ do
     <<-RUBY
 
-    Capybara.register_driver :headless_chrome do |app|
-      capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
-        'chromeOptions' => { args: %w(headless disable-gpu) + [ 'window-size=1280,800' ] })
-      Capybara::Selenium::Driver.new app, browser: :chrome, desired_capabilities: capabilities
-    end
-    Capybara.save_path = Rails.root.join('tmp/capybara')
-    Capybara.javascript_driver = :headless_chrome
+Capybara.register_driver :headless_chrome do |app|
+  capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
+    'chromeOptions' => { args: %w(headless disable-gpu) + [ 'window-size=1280,800' ] })
+  Capybara::Selenium::Driver.new app, browser: :chrome, desired_capabilities: capabilities
+end
+Capybara.save_path = Rails.root.join('tmp/capybara')
+Capybara.javascript_driver = :headless_chrome
     RUBY
   end
 
@@ -303,8 +309,8 @@ RUBY
   ########################################
   inject_into_file 'test/test_helper.rb', before: "ENV['RAILS_ENV'] ||= 'test'" do
     <<-RUBY
-    require 'simplecov'
-    SimpleCov.start
+require 'simplecov'
+SimpleCov.start
 
     RUBY
   end
@@ -313,14 +319,26 @@ RUBY
   ########################################
 
   def setup_bootstrap
-    inject_into_file 'app/assets/stylesheets/application.scss', '@import "config/bootstrap_variables";', after: '@import "config/colors";'
-    inject_into_file 'app/assets/stylesheets/application.scss', '@import "bootstrap/scss/bootstrap";', after: '// External libraries'
+
+    inject_into_file 'app/assets/stylesheets/application.scss', after: '@import "config/colors";' do
+    <<-SCSS
+
+@import "config/bootstrap_variables";
+    SCSS
+    end
+
+    inject_into_file 'app/assets/stylesheets/application.scss', after: '@import "font-awesome";' do
+    <<-SCSS
+
+@import "bootstrap/scss/bootstrap";
+    SCSS
+    end
 
     run 'rm app/javascript/packs/application.js'
     run 'yarn add popper.js jquery bootstrap'
     file 'app/javascript/packs/application.js',
     <<-JS
-    import "bootstrap";
+import "bootstrap";
       JS
 
     inject_into_file 'config/webpack/environment.js', after: "environment.loaders.delete('nodeModules');" do
@@ -350,29 +368,29 @@ RUBY
   append_to_file '.overcommit.yml' do
     <<-RUBY
 
-    PreCommit:
-    Annotate:
-      enabled: true
-      on_warn: fail
-      problem_on_unmodified_line: report
-      command: ['bundle', 'exec', 'annotate']
-    ERD:
-      enabled: true
-      on_warn: fail
-      problem_on_unmodified_line: report
-      command: ['bundle', 'exec', 'erd']
-    RuboCop:
-      enabled: true
-      on_warn: fail
-      problem_on_unmodified_line: report
-      command: ['bundle', 'exec', 'rubocop']
+PreCommit:
+Annotate:
+  enabled: true
+  on_warn: fail
+  problem_on_unmodified_line: report
+  command: ['bundle', 'exec', 'annotate']
+ERD:
+  enabled: true
+  on_warn: fail
+  problem_on_unmodified_line: report
+  command: ['bundle', 'exec', 'erd']
+RuboCop:
+  enabled: true
+  on_warn: fail
+  problem_on_unmodified_line: report
+  command: ['bundle', 'exec', 'rubocop']
 
-    PrePush:
-      Brakeman:
-        enabled: true
-        on_warn: fail
-        problem_on_unmodified_line: report
-        command: ['bundle', 'exec', 'brakeman']
+PrePush:
+  Brakeman:
+    enabled: true
+    on_warn: fail
+    problem_on_unmodified_line: report
+    command: ['bundle', 'exec', 'brakeman']
     RUBY
   end
   run 'overcommit --sign'
