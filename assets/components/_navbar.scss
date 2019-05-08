@@ -1,12 +1,12 @@
-`.navbar-main-verte {
+.navbar {
   justify-content: space-between;
   background: white;
 }
 
-.navbar-main-verte .navbar-collapse {
+.navbar .navbar-collapse {
   flex-grow: 0;
 }
 
-.navbar-main-verte .navbar-brand img {
+.navbar .navbar-brand img {
   width: 40px;
 }
