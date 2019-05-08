@@ -87,8 +87,8 @@ YAML
 run 'rm -rf app/assets/stylesheets'
 run 'rm -rf vendor'
 run 'curl -L https://github.com/main-verte/rails-template/archive/master.zip > stylesheets.zip'
-run 'unzip stylesheets.zip -d app/assets && rm stylesheets.zip && mv app/assets/rails-stylesheets-master/assets/* app/assets/stylesheets'
-run 'rm -r app/assets/rails-stylesheets-master'
+run 'unzip stylesheets.zip -d app/assets && rm stylesheets.zip && mv app/assets/rails-template-master/assets/* app/assets/stylesheets'
+run 'rm -r app/assets/rails-template-master'
 
 run 'rm app/assets/javascripts/application.js'
 file 'app/assets/javascripts/application.js', <<-JS
@@ -157,7 +157,7 @@ file 'README.md', markdown_file_content, force: true
 ########################################
 generators = <<-RUBY
 config.generators do |generate|
-      generate.assets falsedenmdenmarkark
+      generate.assets false
       generate.helper false
       generate.test_framework  :test_unit, fixture: false
     end
