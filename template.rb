@@ -86,6 +86,7 @@ YAML
 ########################################
 run 'rm -rf app/assets/stylesheets'
 run 'rm -rf vendor'
+run 'mkdir app/assets/stylesheets'
 run 'curl -L https://github.com/main-verte/rails-template/archive/master.zip > stylesheets.zip'
 run 'unzip stylesheets.zip -d app/assets && rm stylesheets.zip && mv app/assets/rails-template-master/assets/* app/assets/stylesheets'
 run 'rm -r app/assets/rails-template-master'
