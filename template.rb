@@ -157,7 +157,7 @@ file 'README.md', markdown_file_content, force: true
 ########################################
 generators = <<-RUBY
 config.generators do |generate|
-      generate.assets false
+      generate.assets falsedenmdenmarkark
       generate.helper false
       generate.test_framework  :test_unit, fixture: false
     end
